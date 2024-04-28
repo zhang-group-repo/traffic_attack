@@ -8,3 +8,4 @@ __pycache__
 /gradio/attack_images/det_img/*
 /gradio/attack_images/detect_img/*
 /gradio/attack_images/patch/*
+/yolov3/temp.jpg
