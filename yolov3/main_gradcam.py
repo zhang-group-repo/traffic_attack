@@ -8,7 +8,8 @@ import numpy as np
 from models.gradcam import YOLOV3GradCAM, YOLOV3GradCAMPP
 from models.yolo_detector import YOLOV3TorchObjectDetector
 import cv2
-from style_transfer import load_img
+# 从interface.py调用时,代码执行到这里时会调用项目根路径下的style_transfer导致报错,修改成yolov3包下的style_transfer
+from yolov3.style_transfer import load_img
 
 # names = ['trashcan', 'slippers', 'wire', 'socks', 'carpet', 'book', 'feces', 'curtain', 'stool', 'bed',
 #          'sofa', 'close stool', 'table', 'cabinet']

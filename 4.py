@@ -41,6 +41,15 @@ parser.add_argument("--attack_weight",      dest='attack_weight',       nargs='?
                     help="weight of attack loss", default=5e3)
 parser.add_argument('--mode', type=str, default='disappeared', help='untargeted/targeted/disappeared')
 
+# 从interface.py调用4.py，通过下面的参数来传递信息
+parser.add_argument('--img', type=str, help='input image path')
+parser.add_argument('--style', type=str or None, help='style image path')
+parser.add_argument('--mask', type=str, help='mask image path')
+parser.add_argument('--patch', type=str, help='path to save patch image')
+parser.add_argument('--adv', type=str, help='path to save adv image')
+parser.add_argument('--det', type=str, help='path to save det image')
+parser.add_argument('--call', type=int, default=0, help='1 if call it from interface.py else 0')
+
 args = parser.parse_args()
 
 
@@ -201,34 +210,37 @@ def main(
 
 if __name__ == "__main__":
     detectorYolov3 = DetectorYolov3(show_detail=False, tiny=True)
-    STYLE_IMAGE = 'gradio/style_images/tie1.jpg'
-    MASK_IMAGE = 'gradio/gradcam_images/{}/mask.jpg'
-    PATCH_PATH = 'gradio/attack_images/patch/{}'
-    ADV_IMAGE = 'gradio/attack_images/adv_img/{}'
-    DET_IMAGE = 'gradio/attack_images/det_img/{}'
+    # 通过传入的args.call来判断执行分支
+    # 从这里直接运行,需要手动设置相关图片路径
+    if not args.call:
+        STYLE_IMAGE = 'gradio/style_images/tie1.jpg'
+        MASK_IMAGE = 'gradio/gradcam_images/{}/mask.jpg'
+        PATCH_PATH = 'gradio/attack_images/patch/{}'
+        ADV_IMAGE = 'gradio/attack_images/adv_img/{}'
+        DET_IMAGE = 'gradio/attack_images/det_img/{}'
 
-    image_path = 'gradio/images'
-    images = [os.path.join(image_path, file) for file in os.listdir(image_path)]
-    for image in images:
-        image_name = os.path.basename(image)
+        image_path = 'gradio/images'
+        images = [os.path.join(image_path, file) for file in os.listdir(image_path)]
+        for image in images:
+            image_name = os.path.basename(image)
+            main(
+                image,
+                detectorYolov3,
+                STYLE_IMAGE=STYLE_IMAGE,
+                MASK_IMAGE=MASK_IMAGE.format(os.path.splitext(image_name)[0]),
+                PATCH_PATH=PATCH_PATH.format(image_name),
+                ADV_PATH=ADV_IMAGE.format(image_name),
+                DET_PATH=DET_IMAGE.format(image_name)
+            )
+    # 从interface.py调用,相关参数直接传入
+    else:
         main(
-            image,
-            detectorYolov3,
-            STYLE_IMAGE=STYLE_IMAGE,
-            MASK_IMAGE=MASK_IMAGE.format(os.path.splitext(image_name)[0]),
-            PATCH_PATH=PATCH_PATH.format(image_name),
-            ADV_PATH=ADV_IMAGE.format(image_name),
-            DET_PATH=DET_IMAGE.format(image_name)
+            item=args.img,
+            detectorYolov3=detectorYolov3,
+            STYLE_IMAGE=args.style if args.style != "None" else None,
+            MASK_IMAGE=args.mask,
+            PATCH_PATH=args.patch,
+            ADV_PATH=args.adv,
+            DET_PATH=args.det
         )
-else:
-    detectorYolov3 = DetectorYolov3(show_detail=False, tiny=True)
-    main(
-        item=args.img,
-        detectorYolov3=detectorYolov3,
-        STYLE_IMAGE=args.style if args.style != "None" else None,
-        MASK_IMAGE=args.mask,
-        PATCH_PATH=args.patch,
-        ADV_PATH=args.adv,
-        DET_PATH=args.det
-    )
 
