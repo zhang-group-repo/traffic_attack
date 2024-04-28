@@ -1,5 +1,5 @@
 /yolov3/weights/yolov3.pt
-.idea
+/.idea
 /PyTorchYOLOv3/weights/yolov3.weights
 /PyTorchYOLOv3/weights/yolov3-tiny.weights
 __pycache__
