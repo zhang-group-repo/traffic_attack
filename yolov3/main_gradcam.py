@@ -24,8 +24,13 @@ names = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', '
 # yolov3网络中的三个detect层
 target_layers = ['model_15_act', 'model_22_act', 'model_27_1_cv2_act']
 # Arguments
-parser = argparse.ArgumentParser()
-parser.add_argument('--model-path', type=str, default="./yolov3/weights/yolov3.pt", help='Path to the model')
+parser = argparse.ArgumentParser(conflict_handler='resolve')
+
+if __name__ == '__main__':
+    parser.add_argument('--model-path', type=str, default="./weights/yolov3.pt", help='Path to the model')
+else:
+    parser.add_argument('--model-path', type=str, default="./yolov3/weights/yolov3.pt", help='Path to the model')
+
 parser.add_argument('--img-path', type=str, default='./yolov3/data/test', help='input image path')
 parser.add_argument('--output-dir', type=str, default='./yolov3/outputs/', help='output dir')
 parser.add_argument('--img-size', type=int, default=640, help="input image size")
@@ -76,7 +81,7 @@ def plot_one_box(x, img, color=None, label=None, line_thickness=3):
 
 
 # 检测单个图片
-def main(img_path,model):
+def main(img_path,model, SAVE_DIR=None, attack_range=220):
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
     device = args.device
     input_size = (args.img_size, args.img_size)
@@ -84,14 +89,14 @@ def main(img_path,model):
     img = cv2.imread(img_path)  # 读取图像格式：BGR
     img_size = (img.shape[0],img.shape[1])
     # print('[INFO] Loading the model')
-    
+
     # img[..., ::-1]: BGR --> RGB
     # (480, 640, 3) --> (1, 3, 480, 640)
     # torch_img = model.preprocessing(img[..., ::-1])
     torch_img = load_img(img_path,args.img_size)
     tic = time.time()
     mask_im = np.zeros(img_size)
-   
+
     # 遍历三层检测层
     for target_layer in target_layers:
         # 获取grad-cam方法
@@ -104,7 +109,10 @@ def main(img_path,model):
         result = result[..., ::-1]  # convert to bgr
         # 保存设置
         imgae_name = os.path.basename(img_path)  # 获取图片名
-        save_path = f'{args.output_dir}{imgae_name[:-4]}/'
+        if SAVE_DIR is None:
+            save_path = f'{args.output_dir}{imgae_name[:-4]}/'
+        else:
+            save_path = f'{SAVE_DIR}{imgae_name[:-4]}/'
         # save_path = 'mask/'
         if not os.path.exists(save_path):
             os.makedirs(save_path)
@@ -131,7 +139,7 @@ def main(img_path,model):
                 cv2.imwrite(output_path, res_img)
                 print(f'{target_layer[6:8]}_{cls_name}.jpg done!!')
                 mask_im += mask
-    mask_im = np.where(mask_im<220,0,255) #设置阈值
+    mask_im = np.where(mask_im<attack_range,0,255) #设置阈值
     # print(len(mask_im[mask_im==255]))
     # print(len(mask_im[mask_im==0]))
     num =len(mask_im[mask_im==255])
@@ -144,25 +152,30 @@ def main(img_path,model):
 
     print(f'mask_{cls_name}.jpg done!!')
     print(f'Total time : {round(time.time() - tic, 4)} s')
-    return num
+    return num, save_path
 
 
 if __name__ == '__main__':
-    print("heello")
+    IMAGES_PATH = '../gradio/images/'
+    SAVE_DIR = '../gradio/gradcam_images/'
     device = args.device
     input_size = (args.img_size, args.img_size)
     model = YOLOV3TorchObjectDetector(args.model_path, device, img_size=input_size, names=names)
+
+    images = [os.path.join(IMAGES_PATH, file) for file in os.listdir(IMAGES_PATH)]
+    for image in images:
+        main(image, model, SAVE_DIR=SAVE_DIR)
     # 图片路径为文件夹
-    if os.path.isdir(args.img_path):
-        img_list = os.listdir(args.img_path)
-        print(img_list)
-        num = 0
-        for item in img_list:
-            # 依次获取文件夹中的图片名，组合成图片的路径
-            print(f'[INFO]prepare the image {item}')
-            tmp = main(os.path.join(args.img_path, item),model)
-            num +=tmp
-        print(num)
-    # 单个图片
-    else:
-        main(args.img_path,model)
+    # if os.path.isdir(args.img_path):
+    #     img_list = os.listdir(args.img_path)
+    #     print(img_list)
+    #     num = 0
+    #     for item in img_list:
+    #         # 依次获取文件夹中的图片名，组合成图片的路径
+    #         print(f'[INFO]prepare the image {item}')
+    #         tmp = main(os.path.join(args.img_path, item),model)
+    #         num +=tmp
+    #     print(num)
+    # # 单个图片
+    # else:
+    #     main(args.img_path,model)
