@@ -107,6 +107,7 @@ def wrapped_attack_main(image, style=None):
     delete_files('gradio/attack_images/adv_img/')
     delete_files('gradio/attack_images/det_img/')
     delete_files('gradio/attack_images/patch/')
+    delete_files('gradio/attack_images/yolov3_clear_det/')
 
     command = [sys.executable, "4.py",
                "--img", image,
