@@ -169,10 +169,9 @@ if __name__ == "__main__":
     #     plt.savefig(f"./output/{filename}.png", bbox_inches="tight", pad_inches=0.0)
     #     plt.close()
 else:
-    sys.path.append('PyTorchYOLOv3/')
-    from models import *
-    from utils.utils import *
-    from utils.datasets import *
+    from PyTorchYOLOv3.models import *
+    from PyTorchYOLOv3.utils.utils import *
+    from PyTorchYOLOv3.utils.datasets import *
     
 class MaxProbExtractor(nn.Module):
     """MaxProbExtractor: extracts max class probability for class from YOLO output.

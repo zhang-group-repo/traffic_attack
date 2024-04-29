@@ -3,13 +3,15 @@ import sys
 
 import gradio as gr
 
-sys.path.append('/')
-sys.path.append('/yolov3')
 from yolov3.detect import prepare_model, predict_image
 from yolov3.models.yolo_detector import YOLOV3TorchObjectDetector
 from yolov3.main_gradcam import args as gradcam_args
 from yolov3.main_gradcam import names as gradcam_names
 from yolov3.main_gradcam import main as gradcam_main
+
+from PyTorchYOLOv3.detect import DetectorYolov3
+from torchvision.utils import save_image
+from style_transfer import load_img
 
 import subprocess
 import shutil
@@ -36,6 +38,8 @@ MASK_IMAGE = 'gradio/gradcam_images/{}/mask.jpg'
 PATCH_IMAGE = 'gradio/attack_images/patch/{}'
 ADV_IMAGE = 'gradio/attack_images/adv_img/{}'
 DET_IMAGE = 'gradio/attack_images/det_img/{}'
+CLEAR_DET_IMAGE = 'gradio/attack_images/yolov3_clear_det/{}'
+
 
 
 def delete_files(folder_path):
@@ -56,6 +60,31 @@ def wrapped_predict_image(image):
     return os.path.join(save_dir, os.path.basename(image))
 
 
+# 原图检测 使用PyTorchYOLOv3模型
+def wrapped_predict_image2(image):
+    global yolov3
+    global CLEAR_DET_IMAGE
+    delete_files(PREDICTED_IMAGES)
+
+    names = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
+             'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
+             'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee',
+             'skis', 'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard',
+             'tennis racket', 'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple',
+             'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair', 'couch',
+             'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
+             'cell phone',
+             'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear',
+             'hair drier', 'toothbrush']  # class names
+
+    save_path = CLEAR_DET_IMAGE.format(os.path.basename(image))
+    loaded_image = load_img(image, (416, 416))
+    _, _, det, _, _ = yolov3.detect(input_imgs=loaded_image, cls_id_attacked=11)
+    detected_img = yolov3.plot(loaded_image, names, det, 0.5)
+    save_image(detected_img, save_path)
+    return save_path
+
+
 # 生成攻击区域gradcam
 def wrapped_gradcam_main(image, attack):
     global gradcam_model
@@ -68,7 +97,6 @@ def wrapped_gradcam_main(image, attack):
 
 
 def wrapped_attack_main(image, style=None):
-    global detectorYolov3
     global MASK_IMAGE
     global PATCH_IMAGE
     global ADV_IMAGE
@@ -111,7 +139,7 @@ with gr.Blocks(css=css) as demo:
             output_img = gr.Image(interactive=False, show_label=False, height="30vh", type='filepath')
             with gr.Row(elem_classes=["column2_btn"]):
                 detect_btn = gr.Button(value="原图检测")
-                detect_btn.click(fn=wrapped_predict_image, inputs=input_img, outputs=output_img)
+                detect_btn.click(fn=wrapped_predict_image2, inputs=input_img, outputs=output_img)
         with gr.Column(elem_classes=["column34"]):
             output_img_1 = gr.Image(interactive=False, show_label=False, type="filepath")
             output_img_2 = gr.Image(interactive=False, show_label=False, type="filepath")
@@ -127,7 +155,8 @@ with gr.Blocks(css=css) as demo:
 if __name__ == '__main__':
     # 加载原图检测模型
     predict_model_path = './yolov3/weights/yolov3.pt'
-    predict_model = prepare_model(weights=predict_model_path)
+    # predict_model = prepare_model(weights=predict_model_path)
+    yolov3 = DetectorYolov3(show_detail=False, tiny=True)
 
     # 加载热力图模型
     input_size = (gradcam_args.img_size, gradcam_args.img_size)

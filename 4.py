@@ -76,7 +76,7 @@ def main(
 
     num_epoches = 1000
 
-    detector = detectorYolov3 if detectorYolov3 else DetectorYolov3(show_detail=False, tiny=True)
+    detector = detectorYolov3
     # yoloModel = YOLOV3TorchObjectDetector(args.model_path, device, img_size=input_size, names=names)
     loss_func = torch.nn.CrossEntropyLoss()
 

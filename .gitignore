@@ -3,10 +3,11 @@
 /PyTorchYOLOv3/weights/yolov3.weights
 /PyTorchYOLOv3/weights/yolov3-tiny.weights
 __pycache__
-/gradio/predicted_images
+/gradio/predicted_images/*
 /gradio/gradcam_images/*
 /gradio/attack_images/adv_img/*
 /gradio/attack_images/det_img/*
-/gradio/attack_images/detect_img/*
+/gradio/attack_images/yolov3_clear_det/*
 /gradio/attack_images/patch/*
 /yolov3/temp.jpg
+/test/*
