@@ -3,7 +3,7 @@
 Official implementation of "Rust-Style Patch: A Physical and Naturalistic Camouflage Attacks on Object Detector for Remote Sensing Images" by Binyue Deng, Denghui Zhang, Fashan Dong, Junjian Zhang, Muhammad Shafiq and Zhaoquan Gu.
 
 [Paper Link]:(https://www.mdpi.com/2072-4292/15/4/885)
-![frame](framework.png)
+![frame](./framework.png)
 
 
 # 热力图生成
