@@ -6,7 +6,6 @@ Official implementation of "Rust-Style Patch: A Physical and Naturalistic Camouf
 ![frame](framework.png)
 
 
-
 # 热力图生成
 yolov3/
 - main_gradcam.py
