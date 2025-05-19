@@ -1,3 +1,11 @@
+# Rust-Style Patch
+
+Official implementation of "Rust-Style Patch: A Physical and Naturalistic Camouflage Attacks on Object Detector for Remote Sensing Images" by Binyue Deng, Denghui Zhang, Fashan Dong, Junjian Zhang, Muhammad Shafiq and Zhaoquan Gu.
+
+Paper Link:(https://www.mdpi.com/2072-4292/15/4/885)
+![frame](./framework.png)
+
+
 # 热力图生成
 yolov3/
 - main_gradcam.py
@@ -15,7 +23,7 @@ yolov3/
 
 
 # 攻击文件（四）
-4.py(物理域攻击)
+phy_attack.py(物理域攻击)
  - 攻击图像内容路径：content_img_path = f'{yolov3/data/test/}'
  - 攻击图像从211行主函数 main('000000026162.jpg',detectorYolov3)传入
  其他同上
